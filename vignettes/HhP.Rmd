@@ -1,0 +1,94 @@
+---
+title: "HhP"
+author: "Mingyang Ren"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{HhP}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# Table of contents
+1. [Description](#Description)
+2. [Methodology](#Methodology)
+3. [Quick Start](#Quick Start)
+
+
+
+
+# Description
+In cancer research, supervised heterogeneity analysis has important implications. Such analysis has been traditionally based on clinical/demographic/molecular variables. Recently, histopathological imaging features, which are generated as a byproduct of biopsy, have been shown as effective for modeling cancer outcomes, and a handful of supervised heterogeneity analysis has been conducted based on such features. There are two types of histopathological imaging features, which are extracted based on specific biological knowledge and using automated imaging processing software, respectively. Using both types of histopathological imaging features, our goal is to conduct the first supervised cancer heterogeneity analysis that satisfies a hierarchical structure. That is, the first type of imaging features defines a rough structure, and the second type defines a nested and more refined structure. A penalization approach is developed, which has been motivated by but differs significantly from penalized fusion and sparse group penalization.
+It has satisfactory statistical and numerical properties. In the analysis of lung adenocarcinoma data, it identifies a heterogeneity structure significantly different from the alternatives and has satisfactory prediction and stability performance.
+
+
+
+# Methodology
+
+## Model setting
+
+Consider $n$ independent subjects with measurements $\{ y_i, \boldsymbol{x}_i, \boldsymbol{z}_i \}_{i=1}^{n}$, where $\boldsymbol{x}_i = (x_{i1}, \cdots, x_{iq})^{\top}$ and $\boldsymbol{z}_i = (z_{i1}, \cdots, z_{ip})^{\top}$. Here for subject $i$, $y_i$ is the response variable, and $\boldsymbol{x}_i$ and $\boldsymbol{z}_i$ are the first and second type of imaging features, respectively.
+Consider the heterogeneity model:
+\begin{equation}\nonumber
+y_i = \boldsymbol{x}_i^{\top} \boldsymbol{\beta}_i + \boldsymbol{z}_i^{\top} \boldsymbol{\gamma}_i + \epsilon_i, \ i = 1, \cdots, n,
+\end{equation}
+where $\boldsymbol{\beta}_i$ and $\boldsymbol{\gamma}_i$ are the $q$- and $p$-dimensional vectors of unknown regression coefficients, respectively, and $\epsilon_i$ is the random error with $\text{E}(\epsilon_i) = 0$ and $\text{Var}(\epsilon_i) = \sigma^2$. Intercept is omitted for the simplicity of notation. We consider linear regression for a continuous response, which matches the data analysis in Section 4. Note that the proposed approach is potentially applicable to other types of response/model. Each subject is flexibly modeled to have its own regression coefficients, and two subjects belong to the same (sub)subgroup if and only if they have the same regression model/coefficients.
+
+
+Significantly advancing from the existing literature, we consider a more sophisticated heterogeneity structure as sketched in the lower panel of Figure \ref{scheme} (a), where $\boldsymbol{\beta}_i$'s define a ``rough'' heterogeneity structure with $K_1$ subgroups, and $\boldsymbol{\gamma}_i$'s define a more refined heterogeneity structure with $K_2$ sub-subgroups. Denote $\{ \mathcal{G}_{1}^{*}, \cdots, \mathcal{G}_{K_1}^{*} \}$ as the collection of subject index sets of the $K_1$ subgroups, and $\{ \mathcal{T}_{1}^{*}, \cdots, \mathcal{T}_{K_2}^{*} \}$  as the collection of subject index sets of the $K_2$ sub-subgroups. The hierarchy of heterogeneity amounts to a nested structure. That is, there exists a mutually exclusive partition of $\{1, \cdots, K_2\}$: $\{\mathcal{H}_{1}, \cdots, \mathcal{H}_{K_1}  \}$ satisfying $\mathcal{G}_{k_1}^{*} = \bigcup_{k_2 \in \mathcal{H}_{k_1}} \mathcal{T}_{k_2}^{*}$, $1 \leqslant k_1 \leqslant K_1 $, $1 \leqslant k_2 \leqslant K_2 $.
+
+
+## Reguarlized estimation
+
+For simultaneous estimation and determination of the heterogeneity structure, we propose the penalized objective function:
+\begin{equation}\label{obj}
+\begin{aligned}
+&Q(\boldsymbol{\beta},\boldsymbol{\gamma})
+ =
+\frac{1}{2} \sum_{i=1}^{n} (y_i - \boldsymbol{x}_i^{\top} \boldsymbol{\beta}_i - \boldsymbol{z}_i^{\top} \boldsymbol{\gamma}_i)^2 \\
+&~~~~~ +
+\sum_{1 \leqslant j < m \leqslant n}p \left(\sqrt{\| \boldsymbol{\beta}_j - \boldsymbol{\beta}_m \|_2^2 + \| \boldsymbol{\gamma}_j - \boldsymbol{\gamma}_m \|_2^2 }, \lambda_1 \right)
++ \sum_{1 \leqslant j < m \leqslant n} p\left(\| \boldsymbol{\beta}_j - \boldsymbol{\beta}_m \|_2, \lambda_2 \right),
+\end{aligned}
+\end{equation}
+where $\boldsymbol{\beta} = (\boldsymbol{\beta}_1^{\top}, \cdots, \boldsymbol{\beta}_{n}^{\top}  )^{\top}$, $\boldsymbol{\gamma} = (\boldsymbol{\gamma}_1^{\top}, \cdots, \boldsymbol{\gamma}_{n}^{\top}  )^{\top}$, and $p(\cdot, \lambda)$ is a concave penalty function with tuning parameter $\lambda > 0$. In our numerical study, we adopt MCP (Minimax Concave Penalty, \cite{Zhang2010Nearly}), and note that SCAD (Smoothly Clipped Absolute Deviation Penalty) and some other penalties are also applicable. Consider
+$(\widehat{\boldsymbol{\beta}}, \widehat{\boldsymbol{\gamma}} )=\underset{ \boldsymbol{\beta},\boldsymbol{\gamma} }{\mathrm{argmin}} \ Q(\boldsymbol{\beta},\boldsymbol{\gamma})$.
+Denote $\{\widehat{\boldsymbol{\alpha}}_1 , \cdots, \widehat{\boldsymbol{\alpha}}_{\widehat{K}_1} \}$ and $\{\widehat{\boldsymbol{\delta}}_1 , \cdots, \widehat{\boldsymbol{\delta}}_{\widehat{K}_2} \}$ as the distinct values of $\widehat{\boldsymbol{\beta}}$ and $\widehat{\boldsymbol{\gamma}}$, respectively.
+Then $\{ \widehat{\mathcal{G}}_{1}, \cdots, \widehat{\mathcal{G}}_{\widehat{K}_1} \}$ and $\{ \widehat{\mathcal{T}}_{1}, \cdots, \widehat{\mathcal{T}}_{\widehat{K}_2} \}$ constitute mutually exclusive partitions of $\{1, \cdots, n\}$, where $\widehat{\mathcal{G}}_{k_1} = \{i: \widehat{\boldsymbol{\beta}}_i = \widehat{\boldsymbol{\alpha}}_{k_1}, i=1, \cdots, n \}$, $k_1=1, \cdots, \widehat{K}_1$ and $\widehat{\mathcal{T}}_{k_2} = \{i: \widehat{\boldsymbol{\gamma}}_i = \widehat{\boldsymbol{\delta}}_{k_2}, i=1, \cdots, n \}$, $k_2=1, \cdots, \widehat{K}_2$. Collectively, they fully determine the heterogeneity structure.
+
+
+
+# Quick Start
+
+```{r eval=FALSE}
+library(HhP)
+library(Matrix)
+library(MASS)
+library(fmrs)
+data(example.data.reg)
+n   = example.data.reg$n
+q   = example.data.reg$q
+p   = example.data.reg$p
+# ------------ Necessary parameters to support algorithm implementation --------
+beta.init.list  =  gen_int_beta(n, p, q, example.data.reg)
+beta.init  =  beta.init.list$beta.init
+lambda  =  genelambda.obo()
+result  =  HhP.reg(lambda, example.data.reg, n, q, p, beta.init)
+index.list  =  evaluation.sum(n,q,p, result$admmres, result$abic.n, result$admmres2, example.data.reg$Beta0, result$bic.var)
+index.list$err.s
+
+```
+
+## References:
+
+* Ren, M., Zhang, Q., Zhang, S., Zhong, T., Huang, J. & Ma, S. (2022+). Hierarchical cancer heterogeneity analysis based on histopathological imaging features. Biometrics. <doi:10.1111/biom.13426>
+
+
+
+
